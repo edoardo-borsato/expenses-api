@@ -1,30 +1,36 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ExpensesApi.Repositories.Entities;
 
-// Apparently [JsonPropertyName("<name>")] does not work, but [JsonProperty(PropertyName = "<name>")] does the job
 public record ExpenseEntity
 {
-    [JsonProperty(PropertyName = "id")]
+    [JsonPropertyName("email")]
     public string? Id { get; init; }
 
-    [JsonProperty(PropertyName = "value")]
+    [JsonPropertyName("value")]
     public double Value { get; set; }
 
-    [JsonProperty(PropertyName = "date")]
+    [JsonPropertyName("date")]
     public string? Date { get; set; }
 
-    [JsonProperty(PropertyName = "reason")]
+    [JsonPropertyName("reason")]
     public string? Reason { get; set; }
 
-    [JsonProperty(PropertyName = "paymentMethod")]
-    public PaymentMethod PaymentMethod { get; set; }
+    [JsonPropertyName("category")]
+    public Category Category { get; set; }
 }
 
-public enum PaymentMethod
+public enum Category
 {
-    Undefined = 0,
-    Cash = 1,
-    DebitCard = 2,
-    CreditCard = 3
+    Others = 0,
+    HousingAndSupplies = 1,
+    HealthAndPersonalCare = 2,
+    Sport = 3,
+    Transportation = 4,
+    Clothing = 5,
+    Entertainment = 6,
+    BillsAndUtilities = 7,
+    Pets = 8,
+    Insurance = 9,
+    Gifts = 10
 }

@@ -34,7 +34,7 @@ public class ExpensesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> GetAllAsync([FromQuery] GetAllQueryParameters queryParameters, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetAllAsync([FromQuery] GetAllQueryParameters? queryParameters, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation($"{nameof(GetAllAsync)} invoked");
         var sw = Stopwatch.StartNew();

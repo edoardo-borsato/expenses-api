@@ -28,7 +28,7 @@ public class ExpensesRegistry : IExpensesRegistry
 
     #endregion
 
-    public async Task<List<Expense?>> GetAllAsync(FilterParameters filterParameters, CancellationToken cancellationToken = default)
+    public async Task<List<Expense?>> GetAllAsync(FilterParameters? filterParameters, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug($"{nameof(GetAllAsync)} invoked");
         var sw = Stopwatch.StartNew();
@@ -65,7 +65,7 @@ public class ExpensesRegistry : IExpensesRegistry
         var newExpense = new Expense
         {
             Id = newGuid,
-            ExpenseDetails = expenseDetails with { Date = expenseDetails.Date ?? _watch.Now(), PaymentMethod = expenseDetails.PaymentMethod ?? PaymentMethod.Undefined }
+            ExpenseDetails = expenseDetails with { Date = expenseDetails.Date ?? _watch.Now(), Category = expenseDetails.Category ?? Category.Undefined }
         };
 
         await _repository.InsertAsync(newExpense, cancellationToken);

@@ -4,13 +4,13 @@ namespace ExpensesApi.Registries;
 
 public class FilterFactory : IFilterFactory
 {
-    public IFilter Create(FilterParameters parameters)
+    public IFilter Create(FilterParameters? parameters)
     {
         var filter = new Filter();
 
         if (parameters is not null)
         {
-            AddPaymentMethodFilter(parameters, filter);
+            AddCategoryFilter(parameters, filter);
             AddDateFilters(parameters, filter);
         }
 
@@ -39,11 +39,11 @@ public class FilterFactory : IFilterFactory
         }
     }
 
-    private static void AddPaymentMethodFilter(FilterParameters parameters, IFilter filter)
+    private static void AddCategoryFilter(FilterParameters parameters, IFilter filter)
     {
-        if (parameters.PaymentMethod is not null)
+        if (parameters.Category is not null)
         {
-            filter.WithPaymentMethod(parameters.PaymentMethod.Value);
+            filter.WithCategory(parameters.Category.Value);
         }
     }
 

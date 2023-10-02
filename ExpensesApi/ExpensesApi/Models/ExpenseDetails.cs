@@ -16,6 +16,6 @@ public record ExpenseDetails
     [JsonPropertyName("reason")]
     public string? Reason { get; init; }
 
-    [JsonPropertyName("paymentMethod")]
-    public PaymentMethod? PaymentMethod { get; init; }
+    [JsonPropertyName("category")]
+    public Category? Category { get; init; }
 }

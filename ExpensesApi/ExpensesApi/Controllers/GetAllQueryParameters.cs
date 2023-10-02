@@ -15,6 +15,6 @@ public record GetAllQueryParameters
     [FromQuery(Name = "in")]
     public string? In { get; init; }
 
-    [FromQuery(Name = "paymentMethod")]
-    public PaymentMethod? PaymentMethod { get; init; }
+    [FromQuery(Name = "category")]
+    public Category? Category { get; init; }
 }

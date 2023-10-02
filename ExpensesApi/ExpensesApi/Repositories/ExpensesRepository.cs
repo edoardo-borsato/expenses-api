@@ -82,7 +82,7 @@ public class ExpensesRepository : IExpensesRepository
                 Value = expenseEntity.Value,
                 Reason = expenseEntity.Reason,
                 Date = DateTimeOffset.Parse(expenseEntity.Date!),
-                PaymentMethod = ToModelPaymentMethod(expenseEntity.PaymentMethod)
+                Category = ToModelCategory(expenseEntity.Category)
             }
         };
     }
@@ -96,29 +96,45 @@ public class ExpensesRepository : IExpensesRepository
             Reason = expense.ExpenseDetails.Reason,
             // ReSharper disable once PossibleInvalidOperationException
             Date = expense.ExpenseDetails.Date!.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-            PaymentMethod = ToEntityPaymentMethod(expense.ExpenseDetails.PaymentMethod)
+            Category = ToEntityCategory(expense.ExpenseDetails.Category)
         };
     }
 
-    private static Entities.PaymentMethod ToEntityPaymentMethod(Models.PaymentMethod? paymentMethod)
+    private static Entities.Category ToEntityCategory(Models.Category? category)
     {
-        return paymentMethod switch
+        return category switch
         {
-            Models.PaymentMethod.Cash => Entities.PaymentMethod.Cash,
-            Models.PaymentMethod.DebitCard => Entities.PaymentMethod.DebitCard,
-            Models.PaymentMethod.CreditCard => Entities.PaymentMethod.CreditCard,
-            _ => Entities.PaymentMethod.Undefined
+            Models.Category.HealthAndPersonalCare => Entities.Category.HealthAndPersonalCare,
+            Models.Category.Sport => Entities.Category.Sport,
+            Models.Category.HousingAndSupplies => Entities.Category.HousingAndSupplies,
+            Models.Category.Transportation => Entities.Category.Transportation,
+            Models.Category.Clothing => Entities.Category.Clothing,
+            Models.Category.Entertainment => Entities.Category.Entertainment,
+            Models.Category.BillsAndUtilities => Entities.Category.BillsAndUtilities,
+            Models.Category.Pets => Entities.Category.Pets,
+            Models.Category.Insurance => Entities.Category.Insurance,
+            Models.Category.Gifts => Entities.Category.Gifts,
+            Models.Category.Others => Entities.Category.Others,
+            _ => Entities.Category.Others
         };
     }
 
-    private static Models.PaymentMethod? ToModelPaymentMethod(Entities.PaymentMethod paymentMethod)
+    private static Models.Category? ToModelCategory(Entities.Category category)
     {
-        return paymentMethod switch
+        return category switch
         {
-            Entities.PaymentMethod.Cash => Models.PaymentMethod.Cash,
-            Entities.PaymentMethod.DebitCard => Models.PaymentMethod.DebitCard,
-            Entities.PaymentMethod.CreditCard => Models.PaymentMethod.CreditCard,
-            _ => Models.PaymentMethod.Undefined
+            Entities.Category.HealthAndPersonalCare => Models.Category.HealthAndPersonalCare,
+            Entities.Category.Sport => Models.Category.Sport,
+            Entities.Category.HousingAndSupplies => Models.Category.HousingAndSupplies,
+            Entities.Category.Transportation => Models.Category.Transportation,
+            Entities.Category.Clothing => Models.Category.Clothing,
+            Entities.Category.Entertainment => Models.Category.Entertainment,
+            Entities.Category.BillsAndUtilities => Models.Category.BillsAndUtilities,
+            Entities.Category.Pets => Models.Category.Pets,
+            Entities.Category.Insurance => Models.Category.Insurance,
+            Entities.Category.Gifts => Models.Category.Gifts,
+            Entities.Category.Others => Models.Category.Others,
+            _ => Models.Category.Others
         };
     }
 
@@ -126,9 +142,8 @@ public class ExpensesRepository : IExpensesRepository
     {
         expenseEntity.Value = expense.Value;
         expenseEntity.Reason = expense.Reason;
-        // ReSharper disable once PossibleInvalidOperationException
         expenseEntity.Date = expense.Date!.Value.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        expenseEntity.PaymentMethod = ToEntityPaymentMethod(expense.PaymentMethod);
+        expenseEntity.Category = ToEntityCategory(expense.Category);
     }
 
     #endregion

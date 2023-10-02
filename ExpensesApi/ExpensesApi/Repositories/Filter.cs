@@ -1,5 +1,5 @@
 ﻿using ExpensesApi.Repositories.Entities;
-using PaymentMethod = ExpensesApi.Models.PaymentMethod;
+using Category = ExpensesApi.Models.Category;
 
 namespace ExpensesApi.Repositories;
 
@@ -10,10 +10,10 @@ public class Filter : IFilter
         ResetValues();
     }
 
-    private string _from;
-    private string _in;
-    private Tuple<string, string> _between;
-    private PaymentMethod? _paymentMethod;
+    private Category? _category;
+    private string? _from;
+    private string? _in;
+    private Tuple<string, string>? _between;
 
     public IFilter From(string startDate)
     {
@@ -33,9 +33,9 @@ public class Filter : IFilter
         return this;
     }
 
-    public IFilter WithPaymentMethod(PaymentMethod paymentMethod)
+    public IFilter WithCategory(Category category)
     {
-        _paymentMethod = paymentMethod;
+        _category = category;
         return this;
     }
 
@@ -49,7 +49,7 @@ public class Filter : IFilter
 
         if (_in is not null)
         {
-            expenseEntities = expenseEntities.Where(i => i.Date.StartsWith(_in)).ToList();
+            expenseEntities = expenseEntities.Where(i => i.Date!.StartsWith(_in)).ToList();
         }
 
         if (_between is not null)
@@ -60,9 +60,9 @@ public class Filter : IFilter
                 .ToList();
         }
 
-        if (_paymentMethod is not null)
+        if (_category is not null)
         {
-            expenseEntities = expenseEntities.Where(i => i.PaymentMethod == ToEntityPaymentMethod(_paymentMethod.Value)).ToList();
+            expenseEntities = expenseEntities.Where(i => i.Category == ToEntityCategory(_category.Value)).ToList();
         }
 
         ResetValues();
@@ -77,17 +77,25 @@ public class Filter : IFilter
         _from = null;
         _in = null;
         _between = null;
-        _paymentMethod = null;
+        _category = null;
     }
 
-    private static Entities.PaymentMethod ToEntityPaymentMethod(PaymentMethod paymentMethod)
+    private static Entities.Category ToEntityCategory(Category category)
     {
-        return paymentMethod switch
+        return category switch
         {
-            PaymentMethod.Cash => Entities.PaymentMethod.Cash,
-            PaymentMethod.DebitCard => Entities.PaymentMethod.DebitCard,
-            PaymentMethod.CreditCard => Entities.PaymentMethod.CreditCard,
-            _ => Entities.PaymentMethod.Undefined
+            Category.HealthAndPersonalCare => Entities.Category.HealthAndPersonalCare,
+            Category.Sport => Entities.Category.Sport,
+            Category.HousingAndSupplies => Entities.Category.HousingAndSupplies,
+            Category.Transportation => Entities.Category.Transportation,
+            Category.Clothing => Entities.Category.Clothing,
+            Category.Entertainment => Entities.Category.Entertainment,
+            Category.BillsAndUtilities => Entities.Category.BillsAndUtilities,
+            Category.Pets => Entities.Category.Pets,
+            Category.Insurance => Entities.Category.Insurance,
+            Category.Gifts => Entities.Category.Gifts,
+            Category.Others => Entities.Category.Others,
+            _ => Entities.Category.Others
         };
     }
 
