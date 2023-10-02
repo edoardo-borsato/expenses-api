@@ -65,7 +65,7 @@ public class ExpensesRegistry : IExpensesRegistry
         var newExpense = new Expense
         {
             Id = newGuid,
-            ExpenseDetails = expenseDetails with { Date = expenseDetails.Date ?? _watch.Now(), Category = expenseDetails.Category ?? Category.Undefined }
+            ExpenseDetails = expenseDetails with { Date = expenseDetails.Date ?? _watch.Now(), Category = expenseDetails.Category ?? Category.Others }
         };
 
         await _repository.InsertAsync(newExpense, cancellationToken);
