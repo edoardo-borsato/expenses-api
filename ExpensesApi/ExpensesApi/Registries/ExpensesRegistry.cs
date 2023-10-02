@@ -28,7 +28,7 @@ public class ExpensesRegistry : IExpensesRegistry
 
     #endregion
 
-    public async Task<IEnumerable<Expense>> GetAllAsync(FilterParameters filterParameters, CancellationToken cancellationToken = default)
+    public async Task<List<Expense?>> GetAllAsync(FilterParameters filterParameters, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug($"{nameof(GetAllAsync)} invoked");
         var sw = Stopwatch.StartNew();
@@ -42,7 +42,7 @@ public class ExpensesRegistry : IExpensesRegistry
         return expenses;
     }
 
-    public async Task<Expense> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Expense?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug($"{nameof(GetAsync)} invoked. ID: {id}");
         var sw = Stopwatch.StartNew();
@@ -65,13 +65,7 @@ public class ExpensesRegistry : IExpensesRegistry
         var newExpense = new Expense
         {
             Id = newGuid,
-            ExpenseDetails = new ExpenseDetails
-            {
-                Value = expenseDetails.Value,
-                Reason = expenseDetails.Reason,
-                Date = expenseDetails.Date ?? _watch.Now(),
-                PaymentMethod = expenseDetails.PaymentMethod ?? PaymentMethod.Undefined
-            }
+            ExpenseDetails = expenseDetails with { Date = expenseDetails.Date ?? _watch.Now(), PaymentMethod = expenseDetails.PaymentMethod ?? PaymentMethod.Undefined }
         };
 
         await _repository.InsertAsync(newExpense, cancellationToken);
@@ -81,7 +75,7 @@ public class ExpensesRegistry : IExpensesRegistry
         return newExpense;
     }
 
-    public async Task<Expense> UpdateAsync(Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
+    public async Task<Expense?> UpdateAsync(Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug($"{nameof(UpdateAsync)} invoked. ID: {id}");
         var sw = Stopwatch.StartNew();

@@ -15,7 +15,7 @@ public class ExpensesRepository : IExpensesRepository
         _container = container;
     }
 
-    public async Task<IEnumerable<Expense>> GetAllAsync(IFilter filter, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Expense?>> GetAllAsync(IFilter filter, CancellationToken cancellationToken = default)
     {
         var expensesEntities = await _container.GetItemLinqQueryable<ExpenseEntity>(cancellationToken);
 
@@ -24,10 +24,10 @@ public class ExpensesRepository : IExpensesRepository
         return expensesEntities.Select(ToExpense);
     }
 
-    public async Task<Expense> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Expense?> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var partitionKeyValue = id.ToString();
-        ExpenseEntity expenseEntity = null;
+        ExpenseEntity? expenseEntity = null;
         try
         {
             expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(partitionKeyValue, new PartitionKey(partitionKeyValue), null, cancellationToken);
@@ -46,7 +46,7 @@ public class ExpensesRepository : IExpensesRepository
         await _container.CreateItemAsync(expenseEntity, new PartitionKey(expenseEntity.Id), null, cancellationToken);
     }
 
-    public async Task<Expense> UpdateAsync(Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
+    public async Task<Expense?> UpdateAsync(Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
     {
         var partitionKeyValue = id.ToString();
         var partitionKey = new PartitionKey(partitionKeyValue);
@@ -67,7 +67,7 @@ public class ExpensesRepository : IExpensesRepository
 
     #region Utility Methods
 
-    private static Expense ToExpense(ExpenseEntity expenseEntity)
+    private static Expense? ToExpense(ExpenseEntity? expenseEntity)
     {
         if (expenseEntity is null)
         {
@@ -76,12 +76,12 @@ public class ExpensesRepository : IExpensesRepository
 
         return new Expense
         {
-            Id = Guid.Parse(expenseEntity.Id),
+            Id = Guid.Parse(expenseEntity.Id!),
             ExpenseDetails = new ExpenseDetails
             {
                 Value = expenseEntity.Value,
                 Reason = expenseEntity.Reason,
-                Date = DateTimeOffset.Parse(expenseEntity.Date),
+                Date = DateTimeOffset.Parse(expenseEntity.Date!),
                 PaymentMethod = ToModelPaymentMethod(expenseEntity.PaymentMethod)
             }
         };
@@ -95,7 +95,7 @@ public class ExpensesRepository : IExpensesRepository
             Value = expense.ExpenseDetails.Value,
             Reason = expense.ExpenseDetails.Reason,
             // ReSharper disable once PossibleInvalidOperationException
-            Date = expense.ExpenseDetails.Date.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+            Date = expense.ExpenseDetails.Date!.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),
             PaymentMethod = ToEntityPaymentMethod(expense.ExpenseDetails.PaymentMethod)
         };
     }
@@ -127,7 +127,7 @@ public class ExpensesRepository : IExpensesRepository
         expenseEntity.Value = expense.Value;
         expenseEntity.Reason = expense.Reason;
         // ReSharper disable once PossibleInvalidOperationException
-        expenseEntity.Date = expense.Date.Value.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        expenseEntity.Date = expense.Date!.Value.ToString("yyyy-MM-ddTHH:mm:ssZ");
         expenseEntity.PaymentMethod = ToEntityPaymentMethod(expense.PaymentMethod);
     }
 

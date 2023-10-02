@@ -6,16 +6,16 @@ namespace ExpensesApi.Repositories.Entities;
 public record ExpenseEntity
 {
     [JsonProperty(PropertyName = "id")]
-    public string Id { get; init; }
+    public string? Id { get; init; }
 
     [JsonProperty(PropertyName = "value")]
     public double Value { get; set; }
 
     [JsonProperty(PropertyName = "date")]
-    public string Date { get; set; }
+    public string? Date { get; set; }
 
     [JsonProperty(PropertyName = "reason")]
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
 
     [JsonProperty(PropertyName = "paymentMethod")]
     public PaymentMethod PaymentMethod { get; set; }

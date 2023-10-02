@@ -28,7 +28,7 @@ public class ContainerWrapper : IContainer
         return items;
     }
 
-    public async Task<T> ReadItemAsync<T>(string id, PartitionKey partitionKey, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
+    public async Task<T> ReadItemAsync<T>(string id, PartitionKey partitionKey, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -41,17 +41,17 @@ public class ContainerWrapper : IContainer
         }
     }
 
-    public async Task CreateItemAsync<T>(T item, PartitionKey? partitionKey = null, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
+    public async Task CreateItemAsync<T>(T item, PartitionKey? partitionKey = null, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
     {
         await _container.CreateItemAsync(item, partitionKey, requestOptions, cancellationToken);
     }
 
-    public async Task UpsertItemAsync<T>(T item, PartitionKey? partitionKey, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
+    public async Task UpsertItemAsync<T>(T item, PartitionKey? partitionKey, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
     {
         await _container.UpsertItemAsync(item, partitionKey, requestOptions, cancellationToken);
     }
 
-    public async Task DeleteItemAsync<T>(string id, PartitionKey partitionKey, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
+    public async Task DeleteItemAsync<T>(string id, PartitionKey partitionKey, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
     {
         await _container.DeleteItemStreamAsync(id, partitionKey, requestOptions, cancellationToken);
     }
