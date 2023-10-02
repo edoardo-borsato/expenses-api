@@ -12,17 +12,17 @@ public class ContainerWrapper : IContainer
         _container = container;
     }
 
-    public async Task<IEnumerable<T>> GetItemLinqQueryable<T>(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> GetItemLinqQueryable<T>(string id, CancellationToken cancellationToken = default)
     {
         var items = new List<T>();
-        using (var iterator = _container.GetItemQueryIterator<T>())
+        using var iterator = _container.GetItemQueryIterator<T>(new QueryDefinition(
+                "SELECT * FROM c WHERE c.id = @id")
+            .WithParameter("@id", id));
+        while (iterator.HasMoreResults)
         {
-            while (iterator.HasMoreResults)
-            {
-                var response = await iterator.ReadNextAsync(cancellationToken);
+            var response = await iterator.ReadNextAsync(cancellationToken);
 
-                items.AddRange(response.ToList());
-            }
+            items.AddRange(response.ToList());
         }
 
         return items;

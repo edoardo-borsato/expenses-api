@@ -8,5 +8,5 @@ public record Expense
     public Guid? Id { get; init; }
 
     [JsonPropertyName("details")]
-    public ExpenseDetails ExpenseDetails { get; init; }
+    public ExpenseDetails? ExpenseDetails { get; init; }
 }

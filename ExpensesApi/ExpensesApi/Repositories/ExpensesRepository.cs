@@ -15,22 +15,25 @@ public class ExpensesRepository : IExpensesRepository
         _container = container;
     }
 
-    public async Task<IEnumerable<Expense?>> GetAllAsync(IFilter filter, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Expense?>> GetAllAsync(string username, IFilter filter, CancellationToken cancellationToken = default)
     {
-        var expensesEntities = await _container.GetItemLinqQueryable<ExpenseEntity>(cancellationToken);
+        var expensesEntities = await _container.GetItemLinqQueryable<ExpenseEntity>(username, cancellationToken);
 
         expensesEntities = filter.Apply(expensesEntities);
 
         return expensesEntities.Select(ToExpense);
     }
 
-    public async Task<Expense?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Expense?> GetAsync(string username, Guid id, CancellationToken cancellationToken = default)
     {
-        var partitionKeyValue = id.ToString();
+        var partitionKey = new PartitionKeyBuilder()
+            .Add(username)
+            .Add(id.ToString())
+            .Build();
         ExpenseEntity? expenseEntity = null;
         try
         {
-            expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(partitionKeyValue, new PartitionKey(partitionKeyValue), null, cancellationToken);
+            expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
         }
         catch (NotFoundException)
         {
@@ -40,17 +43,23 @@ public class ExpensesRepository : IExpensesRepository
         return ToExpense(expenseEntity);
     }
 
-    public async Task InsertAsync(Expense expense, CancellationToken cancellationToken = default)
+    public async Task InsertAsync(string username, Expense expense, CancellationToken cancellationToken = default)
     {
-        var expenseEntity = ToExpenseEntity(expense);
-        await _container.CreateItemAsync(expenseEntity, new PartitionKey(expenseEntity.Id), null, cancellationToken);
+        var expenseEntity = ToExpenseEntity(username, expense);
+        var partitionKey = new PartitionKeyBuilder()
+            .Add(expenseEntity.Username)
+            .Add(expenseEntity.Guid)
+            .Build();
+        await _container.CreateItemAsync(expenseEntity, partitionKey, null, cancellationToken);
     }
 
-    public async Task<Expense?> UpdateAsync(Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
+    public async Task<Expense?> UpdateAsync(string username, Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
     {
-        var partitionKeyValue = id.ToString();
-        var partitionKey = new PartitionKey(partitionKeyValue);
-        var expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(partitionKeyValue, partitionKey, null, cancellationToken);
+        var partitionKey = new PartitionKeyBuilder()
+            .Add(username)
+            .Add(id.ToString())
+            .Build();
+        var expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
 
         UpdateExpenseEntity(expenseDetails, expenseEntity);
 
@@ -59,10 +68,13 @@ public class ExpensesRepository : IExpensesRepository
         return ToExpense(expenseEntity);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string username, Guid id, CancellationToken cancellationToken = default)
     {
-        var partitionKeyValue = id.ToString();
-        await _container.DeleteItemAsync<ExpenseEntity>(partitionKeyValue, new PartitionKey(partitionKeyValue), null, cancellationToken);
+        var partitionKey = new PartitionKeyBuilder()
+            .Add(username)
+            .Add(id.ToString())
+            .Build();
+        await _container.DeleteItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
     }
 
     #region Utility Methods
@@ -76,7 +88,7 @@ public class ExpensesRepository : IExpensesRepository
 
         return new Expense
         {
-            Id = Guid.Parse(expenseEntity.Id!),
+            Id = Guid.Parse(expenseEntity.Guid!),
             ExpenseDetails = new ExpenseDetails
             {
                 Value = expenseEntity.Value,
@@ -87,12 +99,14 @@ public class ExpensesRepository : IExpensesRepository
         };
     }
 
-    private static ExpenseEntity ToExpenseEntity(Expense expense)
+    private static ExpenseEntity ToExpenseEntity(string username, Expense expense)
     {
         return new ExpenseEntity
         {
-            Id = expense.Id.ToString(),
-            Value = expense.ExpenseDetails.Value,
+            Id = username,
+            Username = username,
+            Guid = expense.Id.ToString(),
+            Value = expense.ExpenseDetails!.Value,
             Reason = expense.ExpenseDetails.Reason,
             // ReSharper disable once PossibleInvalidOperationException
             Date = expense.ExpenseDetails.Date!.Value.ToString("yyyy-MM-ddTHH:mm:ssZ"),

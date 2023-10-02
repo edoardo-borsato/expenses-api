@@ -32,36 +32,47 @@ public class ExpensesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Expense>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> GetAllAsync([FromQuery] GetAllQueryParameters? queryParameters, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetAllAsync([FromQuery] GetAllQueryParameters? queryParameters, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"{nameof(GetAllAsync)} invoked");
+        _logger.LogInformation($"{nameof(GetAllAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
 
         try
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new InvalidOperationException();
+            }
+
             var filterParameters = _validator.Validate(queryParameters);
 
-            var expenses = await _registry.GetAllAsync(filterParameters, cancellationToken);
+            var expenses = await _registry.GetAllAsync(username, filterParameters, cancellationToken);
 
-            _logger.LogInformation($"{nameof(GetAllAsync)} completed. Expenses count: {expenses.Count()}. Elapsed time: {sw.Elapsed}");
+            _logger.LogInformation($"{nameof(GetAllAsync)} completed. Username: {username}; Expenses count: {expenses.Count}. Elapsed time: {sw.Elapsed}");
 
             return Ok(expenses);
         }
+        catch (InvalidOperationException)
+        {
+            _logger.LogError($"Invalid username: {username}. Elapsed time: {sw.Elapsed}");
+            return Unauthorized(new Error { ErrorMessage = $"Invalid username: {username}" });
+        }
         catch (FormatException e)
         {
-            _logger.LogError(e, $"Invalid query parameter. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"Invalid query parameter. Username: {username}. Elapsed time: {sw.Elapsed}");
             return BadRequest(new Error { ErrorMessage = $"Invalid query parameter: {e.Message}" });
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning($"Operation cancelled by client. Elapsed time: {sw.Elapsed}");
+            _logger.LogWarning($"Operation cancelled by client. Username: {username}. Elapsed time: {sw.Elapsed}");
             return Cancelled(new Error { ErrorMessage = "Operation cancelled by client" });
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expenses. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving expenses. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
@@ -69,36 +80,47 @@ public class ExpensesController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Expense))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Error))]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> GetAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetAsync([FromRoute(Name = "id")] Guid id, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"{nameof(GetAsync)} invoked");
+        _logger.LogInformation($"{nameof(GetAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
 
         try
         {
-            var expense = await _registry.GetAsync(id, cancellationToken);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new InvalidOperationException(nameof(username));
+            }
+
+            var expense = await _registry.GetAsync(username, id, cancellationToken);
             if (expense is null)
             {
-                var errorMessage = $"No expense found with given ID: {id}";
+                var errorMessage = $"No expense found with given ID: {id}. Username: {username}";
                 _logger.LogError($"{errorMessage}. Elapsed time: {sw.Elapsed}");
                 return NotFound(new Error { ErrorMessage = errorMessage });
             }
 
-            _logger.LogInformation($"{nameof(GetAsync)} completed. Expense: {expense}. Elapsed time: {sw.Elapsed}");
+            _logger.LogInformation($"{nameof(GetAsync)} completed. Username: {username}; Expense: {expense}. Elapsed time: {sw.Elapsed}");
 
             return Ok(expense);
         }
+        catch (InvalidOperationException)
+        {
+            _logger.LogError($"Invalid username: {username}. Elapsed time: {sw.Elapsed}");
+            return Unauthorized(new Error { ErrorMessage = $"Invalid username: {username}" });
+        }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning($"Operation cancelled by client. Elapsed time: {sw.Elapsed}");
+            _logger.LogWarning($"Operation cancelled by client. Username: {username}. Elapsed time: {sw.Elapsed}");
             return Cancelled(new Error { ErrorMessage = "Operation cancelled by client" });
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expense. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving expense. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
@@ -106,34 +128,45 @@ public class ExpensesController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Expense))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> CreateAsync([FromBody] ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> CreateAsync([FromBody] ExpenseDetails expenseDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"{nameof(CreateAsync)} invoked");
+        _logger.LogInformation($"{nameof(CreateAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
 
         try
         {
-            var createdExpense = await _registry.InsertAsync(expenseDetails, cancellationToken);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
 
-            _logger.LogInformation($"{nameof(CreateAsync)} completed. Expense: {createdExpense}. Elapsed time: {sw.Elapsed}");
+            var createdExpense = await _registry.InsertAsync(username, expenseDetails, cancellationToken);
+
+            _logger.LogInformation($"{nameof(CreateAsync)} completed. Username: {username}; Expense: {createdExpense}. Elapsed time: {sw.Elapsed}");
 
             return CreatedAtRoute("expenses", createdExpense);
         }
+        catch (InvalidOperationException)
+        {
+            _logger.LogError($"Invalid username: {username}. Elapsed time: {sw.Elapsed}");
+            return Unauthorized(new Error { ErrorMessage = $"Invalid username: {username}" });
+        }
         catch (ArgumentException e)
         {
-            _logger.LogError(e, $"Invalid input argument. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"Invalid input argument. Username: {username} Elapsed time: {sw.Elapsed}");
             return BadRequest(new Error { ErrorMessage = e.Message });
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning($"Operation cancelled by client. Elapsed time: {sw.Elapsed}");
+            _logger.LogWarning($"Operation cancelled by client. Username: {username}. Elapsed time: {sw.Elapsed}");
             return Cancelled(new Error { ErrorMessage = "Operation cancelled by client" });
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expenses. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving expenses. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
@@ -141,21 +174,32 @@ public class ExpensesController : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Expense))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Error))]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> UpdateAsync([FromRoute(Name = "id")] Guid id, [FromBody] ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> UpdateAsync([FromRoute(Name = "id")] Guid id, [FromBody] ExpenseDetails expenseDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation($"{nameof(UpdateAsync)} invoked");
+        _logger.LogInformation($"{nameof(UpdateAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
 
         try
         {
-            var updatedRecord = await _registry.UpdateAsync(id, expenseDetails, cancellationToken);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
 
-            _logger.LogInformation($"{nameof(UpdateAsync)} completed. Updated record: {updatedRecord}. Elapsed time: {sw.Elapsed}");
+            var updatedRecord = await _registry.UpdateAsync(username, id, expenseDetails, cancellationToken);
+
+            _logger.LogInformation($"{nameof(UpdateAsync)} completed. Username: {username}; Updated record: {updatedRecord}. Elapsed time: {sw.Elapsed}");
 
             return Ok(updatedRecord);
+        }
+        catch (InvalidOperationException)
+        {
+            _logger.LogError($"Invalid username: {username}. Elapsed time: {sw.Elapsed}");
+            return Unauthorized(new Error { ErrorMessage = $"Invalid username: {username}" });
         }
         catch (ArgumentException e)
         {
@@ -164,18 +208,18 @@ public class ExpensesController : ControllerBase
         }
         catch (NotFoundException e)
         {
-            var errorMessage = $"No expense found with given ID: {id}";
+            var errorMessage = $"No expense found with given ID: {id}. Username: {username}";
             _logger.LogError(e, $"{errorMessage}. Elapsed time: {sw.Elapsed}");
             return NotFound(new Error { ErrorMessage = errorMessage });
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning($"Operation cancelled by client. Elapsed time: {sw.Elapsed}");
+            _logger.LogWarning($"Operation cancelled by client. Username: {username}. Elapsed time: {sw.Elapsed}");
             return Cancelled(new Error { ErrorMessage = "Operation cancelled by client" });
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while updating expense with ID: {id}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while updating expense with ID: {id}. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
@@ -183,20 +227,31 @@ public class ExpensesController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> DeleteAsync([FromRoute(Name = "id")] Guid id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> DeleteAsync([FromRoute(Name = "id")] Guid id, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation($"{nameof(DeleteAsync)} invoked");
         var sw = Stopwatch.StartNew();
 
         try
         {
-            await _registry.DeleteAsync(id, cancellationToken);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
+            await _registry.DeleteAsync(username, id, cancellationToken);
 
             _logger.LogInformation($"{nameof(DeleteAsync)} completed. Elapsed time: {sw.Elapsed}");
 
             return NoContent();
+        }
+        catch (InvalidOperationException)
+        {
+            _logger.LogError($"Invalid username: {username}. Elapsed time: {sw.Elapsed}");
+            return Unauthorized(new Error { ErrorMessage = $"Invalid username: {username}" });
         }
         catch (OperationCanceledException)
         {
