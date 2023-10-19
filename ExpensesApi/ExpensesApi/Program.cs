@@ -27,12 +27,15 @@ namespace ExpensesApi
             var cosmosDbSettings = builder.Configuration.GetSection("CosmosDB").Get<CosmosDb>()!;
             var cosmosClient = new CosmosClient(cosmosDbSettings.AccountEndpoint, cosmosDbSettings.Key);
             var cosmosClientWrapper = new CosmosClientWrapper(cosmosClient);
-            var expensesContainer = cosmosClientWrapper.GetContainer(cosmosDbSettings.DatabaseName, cosmosDbSettings.ContainerName);
+            var expensesContainer = cosmosClientWrapper.GetContainer(cosmosDbSettings.DatabaseName, cosmosDbSettings.ExpensesContainerName);
+            var incomesContainer = cosmosClientWrapper.GetContainer(cosmosDbSettings.DatabaseName, cosmosDbSettings.IncomesContainerName);
             var watch = new Watch();
-            var repository = new ExpensesRepository(expensesContainer);
+            var expensesRepository = new ExpensesRepository(expensesContainer);
+            var incomesRepository = new IncomesRepository(incomesContainer);
             var filterFactory = new FilterFactory();
             var validator = new QueryParametersValidator();
-            var registry = new ExpensesRegistry(loggerFactory, repository, filterFactory, watch);
+            var expensesRegistry = new ExpensesRegistry(loggerFactory, expensesRepository, filterFactory, watch);
+            var incomesRegistry = new IncomesRegistry(loggerFactory, incomesRepository, filterFactory, watch);
 
             // Add services to the container.
 
@@ -42,11 +45,11 @@ namespace ExpensesApi
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Expenses API", Version = "v1" });
-
             });
 
             builder.Services.AddSingleton(_ => loggerFactory);
-            builder.Services.AddSingleton<IExpensesRegistry>(_ => registry);
+            builder.Services.AddSingleton<IExpensesRegistry>(_ => expensesRegistry);
+            builder.Services.AddSingleton<IIncomesRegistry>(_ => incomesRegistry);
             builder.Services.AddSingleton<IQueryParametersValidator>(_ => validator);
 
             var app = builder.Build();

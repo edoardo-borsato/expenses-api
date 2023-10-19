@@ -4,5 +4,6 @@ namespace ExpensesApi.Controllers;
 
 public interface IQueryParametersValidator
 {
-    FilterParameters? Validate(GetAllQueryParameters? queryParameters);
+    FilterParameters? Validate(ExpensesGetAllQueryParameters? queryParameters);
+    FilterParameters? Validate(IncomesGetAllQueryParameters? queryParameters);
 }

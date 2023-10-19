@@ -17,11 +17,11 @@ public class ExpensesRepository : IExpensesRepository
 
     public async Task<IEnumerable<Expense?>> GetAllAsync(string username, IFilter filter, CancellationToken cancellationToken = default)
     {
-        var expensesEntities = await _container.GetItemLinqQueryable<ExpenseEntity>(username, cancellationToken);
+        var entities = await _container.GetItemLinqQueryable<ExpenseEntity>(username, cancellationToken);
 
-        expensesEntities = filter.Apply(expensesEntities);
+        entities = filter.Apply(entities);
 
-        return expensesEntities.Select(ToExpense);
+        return entities.Select(ToExpense);
     }
 
     public async Task<Expense?> GetAsync(string username, Guid id, CancellationToken cancellationToken = default)
@@ -30,27 +30,27 @@ public class ExpensesRepository : IExpensesRepository
             .Add(username)
             .Add(id.ToString())
             .Build();
-        ExpenseEntity? expenseEntity = null;
+        ExpenseEntity? entity = null;
         try
         {
-            expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
+            entity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
         }
         catch (NotFoundException)
         {
             // ignored
         }
 
-        return ToExpense(expenseEntity);
+        return ToExpense(entity);
     }
 
     public async Task InsertAsync(string username, Expense expense, CancellationToken cancellationToken = default)
     {
-        var expenseEntity = ToExpenseEntity(username, expense);
+        var entity = ToExpenseEntity(username, expense);
         var partitionKey = new PartitionKeyBuilder()
-            .Add(expenseEntity.Username)
-            .Add(expenseEntity.Guid)
+            .Add(entity.Username)
+            .Add(entity.Guid)
             .Build();
-        await _container.CreateItemAsync(expenseEntity, partitionKey, null, cancellationToken);
+        await _container.CreateItemAsync(entity, partitionKey, null, cancellationToken);
     }
 
     public async Task<Expense?> UpdateAsync(string username, Guid id, ExpenseDetails expenseDetails, CancellationToken cancellationToken = default)
@@ -59,13 +59,13 @@ public class ExpensesRepository : IExpensesRepository
             .Add(username)
             .Add(id.ToString())
             .Build();
-        var expenseEntity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
+        var entity = await _container.ReadItemAsync<ExpenseEntity>(username, partitionKey, null, cancellationToken);
 
-        UpdateExpenseEntity(expenseDetails, expenseEntity);
+        UpdateExpenseEntity(expenseDetails, entity);
 
-        await _container.UpsertItemAsync(expenseEntity, partitionKey, null, cancellationToken);
+        await _container.UpsertItemAsync(entity, partitionKey, null, cancellationToken);
 
-        return ToExpense(expenseEntity);
+        return ToExpense(entity);
     }
 
     public async Task DeleteAsync(string username, Guid id, CancellationToken cancellationToken = default)
@@ -79,22 +79,22 @@ public class ExpensesRepository : IExpensesRepository
 
     #region Utility Methods
 
-    private static Expense? ToExpense(ExpenseEntity? expenseEntity)
+    private static Expense? ToExpense(ExpenseEntity? entity)
     {
-        if (expenseEntity is null)
+        if (entity is null)
         {
             return null;
         }
 
         return new Expense
         {
-            Id = Guid.Parse(expenseEntity.Guid!),
+            Id = Guid.Parse(entity.Guid!),
             ExpenseDetails = new ExpenseDetails
             {
-                Value = expenseEntity.Value,
-                Reason = expenseEntity.Reason,
-                Date = DateTimeOffset.Parse(expenseEntity.Date!),
-                Category = ToModelCategory(expenseEntity.Category)
+                Value = entity.Value,
+                Reason = entity.Reason,
+                Date = DateTimeOffset.Parse(entity.Date!),
+                Category = ToModelCategory(entity.Category)
             }
         };
     }

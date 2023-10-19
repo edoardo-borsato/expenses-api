@@ -70,6 +70,32 @@ public class Filter : IFilter
         return expenseEntities;
     }
 
+    public IEnumerable<IncomeEntity> Apply(IEnumerable<IncomeEntity> items)
+    {
+        var incomeEntities = items.ToList();
+        if (_from is not null)
+        {
+            incomeEntities = incomeEntities.Where(i => string.Compare(i.Date, _from, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+        }
+
+        if (_in is not null)
+        {
+            incomeEntities = incomeEntities.Where(i => i.Date!.StartsWith(_in)).ToList();
+        }
+
+        if (_between is not null)
+        {
+            incomeEntities = incomeEntities.Where(i =>
+                    string.Compare(i.Date, _between.Item1, StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    string.Compare(i.Date, _between.Item2, StringComparison.OrdinalIgnoreCase) <= 0)
+                .ToList();
+        }
+
+        ResetValues();
+
+        return incomeEntities;
+    }
+
     #region Utility Methods
 
     private void ResetValues()

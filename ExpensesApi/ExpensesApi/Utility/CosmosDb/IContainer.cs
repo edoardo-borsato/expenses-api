@@ -10,10 +10,3 @@ public interface IContainer
     Task UpsertItemAsync<T>(T item, PartitionKey? partitionKey, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default);
     Task DeleteItemAsync<T>(string id, PartitionKey partitionKey, ItemRequestOptions? requestOptions = null, CancellationToken cancellationToken = default);
 }
-
-public class ContainerException : Exception
-{
-    public ContainerException(string message) : base(message)
-    {
-    }
-}

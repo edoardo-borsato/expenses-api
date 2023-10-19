@@ -7,22 +7,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExpensesApi.Controllers;
 
 [ApiController]
-[Route("api/expenses", Name = "expenses")]
-public class ExpensesController : ControllerBase
+[Route("api/incomes", Name = "incomes")]
+public class IncomesController : ControllerBase
 {
     #region Private fields
 
     private readonly IQueryParametersValidator _validator;
-    private readonly IExpensesRegistry _registry;
-    private readonly ILogger<ExpensesController> _logger;
+    private readonly IIncomesRegistry _registry;
+    private readonly ILogger<IncomesController> _logger;
 
     #endregion
 
     #region Initialization
 
-    public ExpensesController(ILoggerFactory loggerFactory, IExpensesRegistry registry, IQueryParametersValidator validator)
+    public IncomesController(ILoggerFactory loggerFactory, IIncomesRegistry registry, IQueryParametersValidator validator)
     {
-        _logger = loggerFactory is not null ? loggerFactory.CreateLogger<ExpensesController>() : throw new ArgumentNullException(nameof(loggerFactory));
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger<IncomesController>() : throw new ArgumentNullException(nameof(loggerFactory));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
     }
@@ -30,12 +30,12 @@ public class ExpensesController : ControllerBase
     #endregion
 
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Expense>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Income>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> GetAllAsync([FromQuery] ExpensesGetAllQueryParameters? queryParameters, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetAllAsync([FromQuery] IncomesGetAllQueryParameters? queryParameters, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation($"{nameof(GetAllAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
@@ -49,11 +49,11 @@ public class ExpensesController : ControllerBase
 
             var filterParameters = _validator.Validate(queryParameters);
 
-            var expenses = await _registry.GetAllAsync(username, filterParameters, cancellationToken);
+            var incomes = await _registry.GetAllAsync(username, filterParameters, cancellationToken);
 
-            _logger.LogInformation($"{nameof(GetAllAsync)} completed. Username: {username}; Expenses count: {expenses.Count}. Elapsed time: {sw.Elapsed}");
+            _logger.LogInformation($"{nameof(GetAllAsync)} completed. Username: {username}; Incomes count: {incomes.Count}. Elapsed time: {sw.Elapsed}");
 
-            return Ok(expenses);
+            return Ok(incomes);
         }
         catch (InvalidOperationException)
         {
@@ -72,13 +72,13 @@ public class ExpensesController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expenses. Username: {username}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving incomes. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
 
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Expense))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Income))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Error))]
@@ -96,17 +96,17 @@ public class ExpensesController : ControllerBase
                 throw new InvalidOperationException(nameof(username));
             }
 
-            var expense = await _registry.GetAsync(username, id, cancellationToken);
-            if (expense is null)
+            var income = await _registry.GetAsync(username, id, cancellationToken);
+            if (income is null)
             {
-                var errorMessage = $"No expense found with given ID: {id}. Username: {username}";
+                var errorMessage = $"No income found with given ID: {id}. Username: {username}";
                 _logger.LogError($"{errorMessage}. Elapsed time: {sw.Elapsed}");
                 return NotFound(new Error { ErrorMessage = errorMessage });
             }
 
-            _logger.LogInformation($"{nameof(GetAsync)} completed. Username: {username}; Expense: {expense}. Elapsed time: {sw.Elapsed}");
+            _logger.LogInformation($"{nameof(GetAsync)} completed. Username: {username}; Income: {income}. Elapsed time: {sw.Elapsed}");
 
-            return Ok(expense);
+            return Ok(income);
         }
         catch (InvalidOperationException)
         {
@@ -120,18 +120,18 @@ public class ExpensesController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expense. Username: {username}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving income. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Expense))]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Income))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> CreateAsync([FromBody] ExpenseDetails expenseDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> CreateAsync([FromBody] IncomeDetails incomeDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation($"{nameof(CreateAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
@@ -143,11 +143,11 @@ public class ExpensesController : ControllerBase
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var createdExpense = await _registry.InsertAsync(username, expenseDetails, cancellationToken);
+            var createdIncome = await _registry.InsertAsync(username, incomeDetails, cancellationToken);
 
-            _logger.LogInformation($"{nameof(CreateAsync)} completed. Username: {username}; Expense: {createdExpense}. Elapsed time: {sw.Elapsed}");
+            _logger.LogInformation($"{nameof(CreateAsync)} completed. Username: {username}; Expense: {createdIncome}. Elapsed time: {sw.Elapsed}");
 
-            return CreatedAtRoute("expenses", createdExpense);
+            return CreatedAtRoute("incomes", createdIncome);
         }
         catch (InvalidOperationException)
         {
@@ -166,19 +166,19 @@ public class ExpensesController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while retrieving expenses. Username: {username}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while retrieving incomes. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
 
     [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Expense))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Income))]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Error))]
     [ProducesResponseType(499, Type = typeof(Error))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Error))]
-    public async Task<ActionResult> UpdateAsync([FromRoute(Name = "id")] Guid id, [FromBody] ExpenseDetails expenseDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> UpdateAsync([FromRoute(Name = "id")] Guid id, [FromBody] IncomeDetails incomeDetails, [FromHeader(Name = "Username")] string? username, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation($"{nameof(UpdateAsync)} invoked. Username: {username}");
         var sw = Stopwatch.StartNew();
@@ -190,7 +190,7 @@ public class ExpensesController : ControllerBase
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var updatedRecord = await _registry.UpdateAsync(username, id, expenseDetails, cancellationToken);
+            var updatedRecord = await _registry.UpdateAsync(username, id, incomeDetails, cancellationToken);
 
             _logger.LogInformation($"{nameof(UpdateAsync)} completed. Username: {username}; Updated record: {updatedRecord}. Elapsed time: {sw.Elapsed}");
 
@@ -208,7 +208,7 @@ public class ExpensesController : ControllerBase
         }
         catch (NotFoundException e)
         {
-            var errorMessage = $"No expense found with given ID: {id}. Username: {username}";
+            var errorMessage = $"No income found with given ID: {id}. Username: {username}";
             _logger.LogError(e, $"{errorMessage}. Elapsed time: {sw.Elapsed}");
             return NotFound(new Error { ErrorMessage = errorMessage });
         }
@@ -219,7 +219,7 @@ public class ExpensesController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while updating expense with ID: {id}. Username: {username}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while updating income with ID: {id}. Username: {username}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }
@@ -260,7 +260,7 @@ public class ExpensesController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"An error occurred while deleting expense with ID: {id}. Elapsed time: {sw.Elapsed}");
+            _logger.LogError(e, $"An error occurred while deleting income with ID: {id}. Elapsed time: {sw.Elapsed}");
             return InternalServerError(new Error { ErrorMessage = $"An error occurred: {e.Message}" });
         }
     }

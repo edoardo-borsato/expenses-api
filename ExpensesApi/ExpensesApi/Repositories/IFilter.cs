@@ -10,4 +10,5 @@ public interface IFilter
     IFilter Between(string startDate, string endDate);
     IFilter WithCategory(Category category);
     IEnumerable<ExpenseEntity> Apply(IEnumerable<ExpenseEntity> items);
+    IEnumerable<IncomeEntity> Apply(IEnumerable<IncomeEntity> items);
 }

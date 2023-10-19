@@ -5,7 +5,7 @@ namespace ExpensesApi.Controllers;
 
 public class QueryParametersValidator : IQueryParametersValidator
 {
-    public FilterParameters? Validate(GetAllQueryParameters? queryParameters)
+    public FilterParameters? Validate(ExpensesGetAllQueryParameters? queryParameters)
     {
         if (queryParameters is null)
         {
@@ -35,6 +35,36 @@ public class QueryParametersValidator : IQueryParametersValidator
         if (queryParameters.Category is not null)
         {
             filterParameters.Category = queryParameters.Category;
+        }
+
+        return filterParameters;
+    }
+
+    public FilterParameters? Validate(IncomesGetAllQueryParameters? queryParameters)
+    {
+        if (queryParameters is null)
+        {
+            return null;
+        }
+
+        var filterParameters = new FilterParameters();
+
+        if (queryParameters.From is not null)
+        {
+            ValidateDate(queryParameters.From);
+            filterParameters.From = queryParameters.From;
+        }
+
+        if (queryParameters.To is not null)
+        {
+            ValidateDate(queryParameters.To);
+            filterParameters.To = queryParameters.To;
+        }
+
+        if (queryParameters.In is not null)
+        {
+            ValidateDate(queryParameters.In);
+            filterParameters.In = queryParameters.In;
         }
 
         return filterParameters;
