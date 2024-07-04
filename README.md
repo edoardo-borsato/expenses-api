@@ -1,6 +1,6 @@
 # expenses-api
 
-This is a simple and lazy web API with the goal to keep track of the daily expenses. Since I'm a poor man and I'm literally doing this project with the purpose of saving some money, all the requirements, configurations and tools used are free!
+This is a simple and lazy web API with the goal to keep track of incomes and expenses. Since I'm a poor man and I'm literally doing this project with the purpose of saving some money, all the requirements, configurations and tools used are free!
 
 ## Configuration
 
