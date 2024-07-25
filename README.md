@@ -23,16 +23,18 @@ This project has been created with the will of publishing it in the Azure cloud 
 
   Once created access your Cosmos DB account and go to the `Settings`&rarr;`Keys`&rarr;`Read-write Keys` section and save somewhere the URI and primary key values (this surprise tools will help us later).
 
-  If you want to be sure to keep your account free you can to the `Cost Management` section and set the total throughput limit to 1000 RU/s or 1400 if you applied the Free Tier Discount (Recommended if you want to avoid unexpected charges)
+  If you want to be sure to keep your account free you can go to the `Cost Management` section and set the total throughput limit to 1000 RU/s or 1400 if you applied the Free Tier Discount (Recommended if you want to avoid unexpected charges)
 
-- Create a new Container
+- Create new Container (one for Expenses and one for Incomes, the Database can be the same)
   - Create new Database
     - Choose a database ID (remember it because this surprise tool will help us later)
     - Database throughput: `Manual`
     - Database Max RU/s: 1000 RU/s
   - Choose a container ID (remember it because this surprise tool will help us later)
   - Indexing: `Automatic`
-  - Partition key: `/id`
+  - Partition key:
+    - Partition key value: `/username, /guid`
+    - Partitioning: `Hierarchical`
 
 ### Project configuration
 
@@ -43,7 +45,8 @@ If you want to run the project locally you just need to go to the `appsettings.j
 ```(text)
   "CosmosDB": {
     "DatabaseName": "<DATABASE_NAME>",
-    "ContainerName": "<CONTAINER_NAME>",
+    "ExpensesContainerName": "<CONTAINER_NAME>",
+    "IncomesContainerName": "<CONTAINER_NAME>",
     "AccountEndpoint": "<ACCOUNT_ENDPOINT>",
     "Key": "<KEY>"
   }
@@ -58,7 +61,8 @@ Remember all the surprise tools we encountered before? Well it's time to substit
 If you want to publish the project on Azure, after configuring all the staff required in order to publish the web API in your Azure account, before pressing the `Publish` button remember to go in the `Hosting profile section actions`&rarr;`Manage Azure App Service settings` (you can access it by pressing the `...` button in the `Hosting` section) and manually add all the authentication and Cosmos DB settings. Remember that the keys must be set as follows:
 
 - CosmosDB\_\_DatabaseName
-- CosmosDB\_\_ContainerName
+- CosmosDB\_\ExpensesContainerName
+- CosmosDB\_\IncomesContainerName
 - CosmosDB\_\_AccountEndpoint
 - CosmosDB\_\_Key
 
