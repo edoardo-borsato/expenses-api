@@ -1,6 +1,6 @@
 # expenses-api
 
-This is a simple and lazy web API with the goal to keep track of incomes and expenses. Since I'm a poor man and I'm literally doing this project with the purpose of saving some money, all the requirements, configurations and tools used are free!
+This is a simple and lazy cloud web API with the goal to keep track of incomes and expenses. Since I'm a poor man and I'm literally doing this project with the purpose of saving some money, all the requirements, configurations and tools used are free!
 
 ## Configuration
 
@@ -61,8 +61,8 @@ Remember all the surprise tools we encountered before? Well it's time to substit
 If you want to publish the project on Azure, after configuring all the staff required in order to publish the web API in your Azure account, before pressing the `Publish` button remember to go in the `Hosting profile section actions`&rarr;`Manage Azure App Service settings` (you can access it by pressing the `...` button in the `Hosting` section) and manually add all the authentication and Cosmos DB settings. Remember that the keys must be set as follows:
 
 - CosmosDB\_\_DatabaseName
-- CosmosDB\_\ExpensesContainerName
-- CosmosDB\_\IncomesContainerName
+- CosmosDB\_\_ExpensesContainerName
+- CosmosDB\_\_IncomesContainerName
 - CosmosDB\_\_AccountEndpoint
 - CosmosDB\_\_Key
 
