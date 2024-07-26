@@ -66,6 +66,11 @@ If you want to publish the project on Azure, after configuring all the staff req
 - CosmosDB\_\_AccountEndpoint
 - CosmosDB\_\_Key
 
+#### Enable logging in Azure
+
+Go to the web app you created, and under the section `Monitoring`&rarr;`App service logs` enable `Application logging (Filesystem)` with the verbosity level you prefer and set `Web server logging` to `Filesystem`.
+Once saved the configuration go to `Monitoring`&rarr;`Log stream` and you you start seeing the console logs stream of the application
+
 ## Usage
 
 To use the web API you can either use a custom HTTP client or something like Postman. You can also access the Swagger UI page at `<ENDPOINT>/swagger/index.html` where `<ENDPOINT>` will be for example `http://localhost:5000` or `https://localhost:5001` if you run the application locally or the `<ACCOUNT_ENDPOINT>` value if the project has been published on Azure, in order to consult the documentation.
